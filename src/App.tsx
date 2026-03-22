@@ -206,7 +206,7 @@ function App() {
             ref={outcomeSectionRef}
             className={`flex flex-1 flex-col items-start gap-6 p-8 outline rounded-2xl ${!matchup ? 'opacity-30' : ''} `}
           >
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-10 w-full">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex flex-col items-start gap-2">
                   <h2 className="text-white">Super Effective</h2>
