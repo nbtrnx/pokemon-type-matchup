@@ -1,8 +1,23 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import './App.css';
 
 function App() {
   const [opponentType, setOpponentType] = useState<string | null>(null);
+
+  const outcomeSectionRef = useRef<HTMLElement | null>(null);
+
+  const handleSelectOpponentType = (typeName: string) => {
+    setOpponentType(typeName);
+
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        outcomeSectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 50);
+    }
+  };
 
   const getMatchup = (opponent: string) => {
     const superEffective: string[] = [];
@@ -159,8 +174,8 @@ function App() {
           </p>
         </header>
 
-        <div className="flex flex-col md:flex-row gap-8 ">
-          <section className="flex flex-col items-start gap-6 p-8 outline rounded-2xl h-fit">
+        <div className="flex flex-col md:flex-row gap-8">
+          <section className="flex flex-1 flex-col items-start gap-6 p-8 outline rounded-2xl h-fit">
             <div className="flex flex-col items-start">
               <h2>Opponent's Type</h2>
               <p className="flex flex-col items-start">
@@ -169,12 +184,12 @@ function App() {
               </p>
             </div>
 
-            <ul className="grid grid-cols-3 gap-4">
+            <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
               {types.map((type) => (
-                <li key={type.name}>
+                <li key={type.name} className="h-full">
                   <button
-                    onClick={() => setOpponentType(type.name)}
-                    className={`flex flex-col ${type.color} h-full w-full p-4 rounded-xl shadow-2xl aspect-square outline outline-black dark:outline-white transition-opacity ${opponentType === type.name ? 'ring-4 ring-white dark:ring-white opacity-100' : opponentType ? 'opacity-40' : 'opacity-100'}`}
+                    onClick={() => handleSelectOpponentType(type.name)}
+                    className={`flex flex-col ${type.color} h-full w-full p-4 rounded-xl aspect-square outline outline-black dark:outline-white transition-opacity justify-center ${opponentType === type.name ? 'ring-4 ring-black dark:ring-white opacity-100' : opponentType ? 'opacity-40' : 'opacity-100'}`}
                   >
                     <div className="flex flex-col">
                       <span>{type.name}</span>
@@ -188,114 +203,123 @@ function App() {
           </section>
 
           <section
-            className={`flex flex-col items-start gap-6 p-8 outline rounded-2xl grow ${!matchup ? 'opacity-30' : ''} `}
+            ref={outcomeSectionRef}
+            className={`flex flex-1 flex-col items-start gap-6 p-8 outline rounded-2xl ${!matchup ? 'opacity-30' : ''} `}
           >
-            <div className="flex flex-col items-start gap-2">
-              <h2 className="text-white">Super Effective</h2>
-              <p className="flex flex-col items-start">
-                <span>超级有效</span>
-                <span>効果はばつぐん！</span>
-              </p>
-            </div>
+            <div className="flex flex-col gap-10">
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h2 className="text-white">Super Effective</h2>
+                  <p className="flex flex-col items-start">
+                    <span>超级有效</span>
+                    <span>効果はばつぐん！</span>
+                  </p>
+                </div>
 
-            <ul className="grid grid-cols-2 gap-4">
-              {!matchup ? null : matchup.superEffective.length > 0 ? (
-                matchup.superEffective.map((type) => {
-                  const currentType = typeMap[type];
-                  return (
-                    <li
-                      key={type}
-                      className={`flex flex-col ${currentType.color} h-full w-full p-8 rounded-xl shadow-2xl aspect-square outline outline-black dark:outline-white`}
-                    >
+                <ul className="grid grid-cols-2 gap-6 w-full">
+                  {!matchup ? null : matchup.superEffective.length > 0 ? (
+                    matchup.superEffective.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li
+                          key={type}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white ring-4 ring-black dark:ring-white`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{currentType.name}</span>
+                            <span className="text-xs opacity-50">{currentType.cn}</span>
+                            <span className="text-xs opacity-50">{currentType.jp}</span>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl justify-center opacity-40`}>
                       <div className="flex flex-col">
-                        <span>{currentType.name}</span>
-                        <span className="text-xs opacity-50">{currentType.cn}</span>
-                        <span className="text-xs opacity-50">{currentType.jp}</span>
+                        <span>There's no matchup.</span>
+                        <span className="text-xs opacity-50">没有匹配。</span>
+                        <span className="text-xs opacity-50">なし</span>
                       </div>
                     </li>
-                  );
-                })
-              ) : (
-                <li className={`flex flex-col h-full w-full p-8 rounded-xl shadow-2xl aspect-square opacity-40`}>
-                  <div className="flex flex-col">
-                    <span>There's no matchup.</span>
-                    <span className="text-xs opacity-50">没有匹配。</span>
-                    <span className="text-xs opacity-50">なし</span>
-                  </div>
-                </li>
-              )}
-            </ul>
+                  )}
+                </ul>
+              </div>
 
-            <div className="flex flex-col items-start gap-2">
-              <h2 className="text-white">Not Very Effective</h2>
-              <p className="flex flex-col items-start">
-                <span>不是很有效</span>
-                <span>効果はいまひとつ</span>
-              </p>
-            </div>
-            <ul className="grid grid-cols-3 gap-4">
-              {!matchup ? null : matchup.notVeryEffective.length > 0 ? (
-                matchup.notVeryEffective.map((type) => {
-                  const currentType = typeMap[type];
-                  return (
-                    <li
-                      key={type}
-                      className={`flex flex-col ${currentType.color} h-full w-full p-8 rounded-xl shadow-2xl aspect-square outline outline-black dark:outline-white`}
-                    >
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h2 className="text-white">Not Very Effective</h2>
+                  <p className="flex flex-col items-start">
+                    <span>不是很有效</span>
+                    <span>効果はいまひとつ</span>
+                  </p>
+                </div>
+                <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                  {!matchup ? null : matchup.notVeryEffective.length > 0 ? (
+                    matchup.notVeryEffective.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li
+                          key={type}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{currentType.name}</span>
+                            <span className="text-xs opacity-50">{currentType.cn}</span>
+                            <span className="text-xs opacity-50">{currentType.jp}</span>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl justify-center opacity-40`}>
                       <div className="flex flex-col">
-                        <span>{currentType.name}</span>
-                        <span className="text-xs opacity-50">{currentType.cn}</span>
-                        <span className="text-xs opacity-50">{currentType.jp}</span>
+                        <span>There's no matchup.</span>
+                        <span className="text-xs opacity-50">没有匹配。</span>
+                        <span className="text-xs opacity-50">なし</span>
                       </div>
                     </li>
-                  );
-                })
-              ) : (
-                <li className={`flex flex-col h-full w-full p-8 rounded-xl shadow-2xl aspect-square opacity-40`}>
-                  <div className="flex flex-col">
-                    <span>There's no matchup.</span>
-                    <span className="text-xs opacity-50">没有匹配。</span>
-                    <span className="text-xs opacity-50">なし</span>
-                  </div>
-                </li>
-              )}
-            </ul>
+                  )}
+                </ul>
+              </div>
 
-            <div className="flex flex-col items-start gap-2">
-              <h2 className="text-white">No Effect</h2>
-              <p className="flex flex-col items-start">
-                <span>没有效果</span>
-                <span>効果がない</span>
-              </p>
-            </div>
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h2 className="text-white">No Effect</h2>
+                  <p className="flex flex-col items-start">
+                    <span>没有效果</span>
+                    <span>効果がない</span>
+                  </p>
+                </div>
 
-            <ul className="grid grid-cols-3 gap-4">
-              {!matchup ? null : matchup.noEffect.length > 0 ? (
-                matchup.noEffect.map((type) => {
-                  const currentType = typeMap[type];
-                  return (
-                    <li
-                      key={type}
-                      className={`flex flex-col ${currentType.color} h-full w-full p-8 rounded-xl shadow-2xl aspect-square outline outline-black dark:outline-white`}
-                    >
+                <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                  {!matchup ? null : matchup.noEffect.length > 0 ? (
+                    matchup.noEffect.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li
+                          key={type}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{currentType.name}</span>
+                            <span className="text-xs opacity-50">{currentType.cn}</span>
+                            <span className="text-xs opacity-50">{currentType.jp}</span>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl opacity-40`}>
                       <div className="flex flex-col">
-                        <span>{currentType.name}</span>
-                        <span className="text-xs opacity-50">{currentType.cn}</span>
-                        <span className="text-xs opacity-50">{currentType.jp}</span>
+                        <span>There's no matchup.</span>
+                        <span className="text-xs opacity-50">没有匹配。</span>
+                        <span className="text-xs opacity-50">なし</span>
                       </div>
                     </li>
-                  );
-                })
-              ) : (
-                <li className={`flex flex-col h-full w-full p-8 rounded-xl shadow-2xl aspect-square opacity-40`}>
-                  <div className="flex flex-col">
-                    <span>There's no matchup.</span>
-                    <span className="text-xs opacity-50">没有匹配。</span>
-                    <span className="text-xs opacity-50">なし</span>
-                  </div>
-                </li>
-              )}
-            </ul>
+                  )}
+                </ul>
+              </div>
+            </div>
           </section>
         </div>
       </main>
