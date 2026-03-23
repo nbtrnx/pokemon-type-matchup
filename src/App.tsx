@@ -2,41 +2,74 @@ import { useRef, useState } from 'react';
 import './App.css';
 
 function App() {
-  const [opponentType, setOpponentType] = useState<string | null>(null);
+  const [opponentTypes, setOpponentTypes] = useState<string[]>([]);
 
   const outcomeSectionRef = useRef<HTMLElement | null>(null);
 
   const handleSelectOpponentType = (typeName: string) => {
-    setOpponentType(typeName);
+    setOpponentTypes((prev) => {
+      if (prev.includes(typeName)) {
+        return prev.filter((type) => type !== typeName);
+      }
 
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        outcomeSectionRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }, 50);
-    }
+      if (prev.length === 2) {
+        return [prev[1], typeName];
+      }
+
+      return [...prev, typeName];
+    });
+
+    // if (window.innerWidth < 768) {
+    //   setTimeout(() => {
+    //     outcomeSectionRef.current?.scrollIntoView({
+    //       behavior: 'smooth',
+    //       block: 'start'
+    //     });
+    //   }, 50);
+    // }
   };
 
-  const getMatchup = (opponent: string) => {
+  const getMultiplier = (attackType: string, defenders: string[]) => {
+    const data = effectiveness[attackType];
+
+    return defenders.reduce((multiplier, defender) => {
+      if (data.immune.includes(defender)) return 0;
+      if (data.strong.includes(defender)) return multiplier * 2;
+      if (data.weak.includes(defender)) return multiplier * 0.5;
+      return multiplier;
+    }, 1);
+  };
+
+  const getMatchup = (defenders: string[]) => {
+    const quadrupleEffective: string[] = [];
     const superEffective: string[] = [];
     const notVeryEffective: string[] = [];
+    const quarterEffective: string[] = [];
     const noEffect: string[] = [];
 
-    Object.entries(effectiveness).forEach(([attackType, data]) => {
-      if (data.strong.includes(opponent)) {
-        superEffective.push(attackType);
-      }
-      if (data.weak.includes(opponent)) {
-        notVeryEffective.push(attackType);
-      }
-      if (data.immune.includes(opponent)) {
+    Object.keys(effectiveness).forEach((attackType) => {
+      const multiplier = getMultiplier(attackType, defenders);
+
+      if (multiplier === 0) {
         noEffect.push(attackType);
+      } else if (multiplier === 4) {
+        quadrupleEffective.push(attackType);
+      } else if (multiplier === 2) {
+        superEffective.push(attackType);
+      } else if (multiplier === 0.5) {
+        notVeryEffective.push(attackType);
+      } else if (multiplier === 0.25) {
+        quarterEffective.push(attackType);
       }
     });
 
-    return { superEffective, notVeryEffective, noEffect };
+    return {
+      quadrupleEffective,
+      superEffective,
+      notVeryEffective,
+      quarterEffective,
+      noEffect
+    };
   };
 
   const types = [
@@ -161,26 +194,28 @@ function App() {
     }
   };
 
-  const matchup = opponentType ? getMatchup(opponentType) : null;
+  const matchup = opponentTypes.length > 0 ? getMatchup(opponentTypes) : null;
 
   return (
     <>
       <main className="flex flex-col gap-8 p-8">
         <header>
-          <h1>Pokemon Type Matchup </h1>
+          <h1 className="!text-6xl !font-black">
+            <span className="[webkit-text-stroke:4px_red]">Pokémon</span> Type Matchup
+          </h1>
           <p className="flex flex-col">
-            <span>宝可梦类型诊断</span>
-            <span>ポケモンタイプ診断</span>
+            <span>宝可梦类型相性诊断</span>
+            <span>ポケモンタイプ相性診断</span>
           </p>
         </header>
 
         <div className="flex flex-col md:flex-row gap-8">
-          <section className="flex flex-1 flex-col items-start gap-6 p-8 outline rounded-2xl h-fit">
+          <section className="flex flex-1 flex-col items-start gap-6 p-8 outline-4 rounded-2xl h-fit">
             <div className="flex flex-col items-start">
-              <h2>Opponent's Type</h2>
+              <h2 className="!text-2xl !font-extrabold">Opponent's Type</h2>
               <p className="flex flex-col items-start">
-                <span>请选择对方的类型。</span>
-                <span>相手のタイプを選んでください。</span>
+                <span>请选择最多两个对方的类型。</span>
+                <span>相手のタイプを2つまで選んでください。</span>
               </p>
             </div>
 
@@ -189,7 +224,7 @@ function App() {
                 <li key={type.name} className="h-full">
                   <button
                     onClick={() => handleSelectOpponentType(type.name)}
-                    className={`flex flex-col ${type.color} h-full w-full p-4 rounded-xl aspect-square outline outline-black dark:outline-white transition-opacity justify-center ${opponentType === type.name ? 'ring-4 ring-black dark:ring-white opacity-100' : opponentType ? 'opacity-40' : 'opacity-100'}`}
+                    className={`flex flex-col ${type.color} h-full w-full p-4 rounded-xl aspect-square outline-2 outline-black dark:outline-white transition-opacity justify-center ${opponentTypes.includes(type.name) ? 'ring-4 ring-black dark:ring-white opacity-100' : opponentTypes.length > 0 ? 'opacity-40' : 'opacity-100'}`}
                   >
                     <div className="flex flex-col">
                       <span>{type.name}</span>
@@ -204,15 +239,55 @@ function App() {
 
           <section
             ref={outcomeSectionRef}
-            className={`flex flex-1 flex-col items-start gap-6 p-8 outline rounded-2xl ${!matchup ? 'opacity-30' : ''} `}
+            className={`flex flex-1 flex-col items-start gap-6 p-8 outline-4 rounded-2xl ${!matchup ? 'opacity-30' : ''} `}
           >
             <div className="flex flex-col gap-10 w-full">
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex flex-col items-start gap-2">
-                  <h2 className="text-white">Super Effective</h2>
+                  <h2 className="text-white !text-2xl !font-extrabold">Ultra Effective (4x)</h2>
                   <p className="flex flex-col items-start">
-                    <span>超级有效</span>
-                    <span>効果はばつぐん！</span>
+                    <span>效果绝佳（4倍）</span>
+                    <span>効果はばつぐん！（4倍）</span>
+                  </p>
+                </div>
+
+                <ul className="grid grid-cols-2 gap-6 w-full">
+                  {!matchup ? null : matchup.quadrupleEffective.length > 0 ? (
+                    matchup.quadrupleEffective.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li
+                          key={type}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white ring-4 ring-black dark:ring-white`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{currentType.name}</span>
+                            <span className="text-xs opacity-50">{currentType.cn}</span>
+                            <span className="text-xs opacity-50">{currentType.jp}</span>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li
+                      className={`flex flex-col col-span-full h-full w-full p-4 rounded-xl justify-center opacity-40`}
+                    >
+                      <div className="flex flex-col">
+                        <span>There's no matchup.</span>
+                        <span className="text-xs opacity-50">没有匹配。</span>
+                        <span className="text-xs opacity-50">なし</span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h2 className="text-white !text-2xl !font-extrabold">Super Effective (2x)</h2>
+                  <p className="flex flex-col items-start">
+                    <span>超级有效（2倍）</span>
+                    <span>効果はばつぐん！（2倍）</span>
                   </p>
                 </div>
 
@@ -234,7 +309,9 @@ function App() {
                       );
                     })
                   ) : (
-                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl justify-center opacity-40`}>
+                    <li
+                      className={`flex flex-col col-span-full h-full w-full p-4 rounded-xl justify-center opacity-40`}
+                    >
                       <div className="flex flex-col">
                         <span>There's no matchup.</span>
                         <span className="text-xs opacity-50">没有匹配。</span>
@@ -247,10 +324,10 @@ function App() {
 
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex flex-col items-start gap-2">
-                  <h2 className="text-white">Not Very Effective</h2>
+                  <h2 className="text-white !text-2xl !font-extrabold">Not Very Effective (0.5x)</h2>
                   <p className="flex flex-col items-start">
-                    <span>不是很有效</span>
-                    <span>効果はいまひとつ</span>
+                    <span>不是很有效（0.5倍）</span>
+                    <span>効果はいまひとつ（0.5倍）</span>
                   </p>
                 </div>
                 <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
@@ -260,7 +337,7 @@ function App() {
                       return (
                         <li
                           key={type}
-                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white`}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline-2 outline-black dark:outline-white`}
                         >
                           <div className="flex flex-col">
                             <span>{currentType.name}</span>
@@ -271,7 +348,9 @@ function App() {
                       );
                     })
                   ) : (
-                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl justify-center opacity-40`}>
+                    <li
+                      className={`flex flex-col col-span-full h-full w-full p-4 rounded-xl justify-center opacity-40`}
+                    >
                       <div className="flex flex-col">
                         <span>There's no matchup.</span>
                         <span className="text-xs opacity-50">没有匹配。</span>
@@ -284,10 +363,50 @@ function App() {
 
               <div className="flex flex-col gap-4 w-full">
                 <div className="flex flex-col items-start gap-2">
-                  <h2 className="text-white">No Effect</h2>
+                  <h2 className="text-white !text-2xl !font-extrabold">Barely Effective (0.25x)</h2>
                   <p className="flex flex-col items-start">
-                    <span>没有效果</span>
-                    <span>効果がない</span>
+                    <span>不是很有效（0.25倍）</span>
+                    <span>効果はいまひとつ（0.25倍）</span>
+                  </p>
+                </div>
+
+                <ul className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full">
+                  {!matchup ? null : matchup.quarterEffective.length > 0 ? (
+                    matchup.quarterEffective.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li
+                          key={type}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline-2 outline-black dark:outline-white`}
+                        >
+                          <div className="flex flex-col">
+                            <span>{currentType.name}</span>
+                            <span className="text-xs opacity-50">{currentType.cn}</span>
+                            <span className="text-xs opacity-50">{currentType.jp}</span>
+                          </div>
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <li
+                      className={`flex flex-col col-span-full h-full w-full p-4 rounded-xl justify-center opacity-40`}
+                    >
+                      <div className="flex flex-col">
+                        <span>There's no matchup.</span>
+                        <span className="text-xs opacity-50">没有匹配。</span>
+                        <span className="text-xs opacity-50">なし</span>
+                      </div>
+                    </li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="flex flex-col gap-4 w-full">
+                <div className="flex flex-col items-start gap-2">
+                  <h2 className="text-white !text-2xl !font-extrabold">No Effect (0x)</h2>
+                  <p className="flex flex-col items-start">
+                    <span>没有效果（0倍）</span>
+                    <span>効果がない（0倍）</span>
                   </p>
                 </div>
 
@@ -298,7 +417,7 @@ function App() {
                       return (
                         <li
                           key={type}
-                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline outline-black dark:outline-white`}
+                          className={`flex flex-col ${currentType.color} h-full w-full p-4 rounded-xl aspect-square justify-center outline-2 outline-black dark:outline-white`}
                         >
                           <div className="flex flex-col">
                             <span>{currentType.name}</span>
@@ -309,7 +428,7 @@ function App() {
                       );
                     })
                   ) : (
-                    <li className={`flex flex-col col-span-2 h-full w-full p-4 rounded-xl opacity-40`}>
+                    <li className={`flex flex-col col-span-full h-full w-full p-4 rounded-xl opacity-40`}>
                       <div className="flex flex-col">
                         <span>There's no matchup.</span>
                         <span className="text-xs opacity-50">没有匹配。</span>
