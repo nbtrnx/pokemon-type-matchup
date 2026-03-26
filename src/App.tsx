@@ -27,6 +27,7 @@ type TypeMeta = {
   jp: string;
   cn: string;
   color: string;
+  icon: string;
 };
 
 type EffectivenessEntry = {
@@ -55,24 +56,30 @@ type MatchupSectionProps = {
 };
 
 const types: TypeMeta[] = [
-  { name: 'Normal', jp: 'ノーマル', cn: '一般', color: 'bg-zinc-400 text-white' },
-  { name: 'Fire', jp: 'ほのお', cn: '火', color: 'bg-red-500 text-white' },
-  { name: 'Water', jp: 'みず', cn: '水', color: 'bg-blue-500 text-white' },
-  { name: 'Grass', jp: 'くさ', cn: '草', color: 'bg-green-500 text-white' },
-  { name: 'Electric', jp: 'でんき', cn: '电', color: 'bg-yellow-400 text-black' },
-  { name: 'Ice', jp: 'こおり', cn: '冰', color: 'bg-cyan-300 text-black' },
-  { name: 'Fighting', jp: 'かくとう', cn: '格斗', color: 'bg-orange-700 text-white' },
-  { name: 'Poison', jp: 'どく', cn: '毒', color: 'bg-purple-500 text-white' },
-  { name: 'Ground', jp: 'じめん', cn: '地面', color: 'bg-amber-600 text-white' },
-  { name: 'Flying', jp: 'ひこう', cn: '飞行', color: 'bg-indigo-300 text-black' },
-  { name: 'Psychic', jp: 'エスパー', cn: '超能力', color: 'bg-pink-500 text-white' },
-  { name: 'Bug', jp: 'むし', cn: '虫', color: 'bg-lime-500 text-black' },
-  { name: 'Rock', jp: 'いわ', cn: '岩石', color: 'bg-yellow-700 text-white' },
-  { name: 'Ghost', jp: 'ゴースト', cn: '幽灵', color: 'bg-violet-700 text-white' },
-  { name: 'Dragon', jp: 'ドラゴン', cn: '龙', color: 'bg-indigo-600 text-white' },
-  { name: 'Dark', jp: 'あく', cn: '恶', color: 'bg-neutral-800 text-white' },
-  { name: 'Steel', jp: 'はがね', cn: '钢', color: 'bg-slate-400 text-black' },
-  { name: 'Fairy', jp: 'フェアリー', cn: '妖精', color: 'bg-pink-300 text-black' }
+  { name: 'Normal', jp: 'ノーマル', cn: '一般', color: 'bg-zinc-400 text-white', icon: '/type-icons/normal.svg' },
+  { name: 'Fire', jp: 'ほのお', cn: '火', color: 'bg-red-500 text-white', icon: '/type-icons/fire.svg' },
+  { name: 'Water', jp: 'みず', cn: '水', color: 'bg-blue-500 text-white', icon: '/type-icons/water.svg' },
+  { name: 'Grass', jp: 'くさ', cn: '草', color: 'bg-green-500 text-white', icon: '/type-icons/grass.svg' },
+  { name: 'Electric', jp: 'でんき', cn: '电', color: 'bg-yellow-400 text-black', icon: '/type-icons/electric.svg' },
+  { name: 'Ice', jp: 'こおり', cn: '冰', color: 'bg-cyan-300 text-black', icon: '/type-icons/ice.svg' },
+  {
+    name: 'Fighting',
+    jp: 'かくとう',
+    cn: '格斗',
+    color: 'bg-orange-700 text-white',
+    icon: '/type-icons/fighting.svg'
+  },
+  { name: 'Poison', jp: 'どく', cn: '毒', color: 'bg-purple-500 text-white', icon: '/type-icons/poison.svg' },
+  { name: 'Ground', jp: 'じめん', cn: '地面', color: 'bg-amber-600 text-white', icon: '/type-icons/ground.svg' },
+  { name: 'Flying', jp: 'ひこう', cn: '飞行', color: 'bg-indigo-300 text-black', icon: '/type-icons/flying.svg' },
+  { name: 'Psychic', jp: 'エスパー', cn: '超能力', color: 'bg-pink-500 text-white', icon: '/type-icons/psychic.svg' },
+  { name: 'Bug', jp: 'むし', cn: '虫', color: 'bg-lime-500 text-black', icon: '/type-icons/bug.svg' },
+  { name: 'Rock', jp: 'いわ', cn: '岩石', color: 'bg-yellow-700 text-white', icon: '/type-icons/rock.svg' },
+  { name: 'Ghost', jp: 'ゴースト', cn: '幽灵', color: 'bg-violet-700 text-white', icon: '/type-icons/ghost.svg' },
+  { name: 'Dragon', jp: 'ドラゴン', cn: '龙', color: 'bg-indigo-600 text-white', icon: '/type-icons/dragon.svg' },
+  { name: 'Dark', jp: 'あく', cn: '恶', color: 'bg-neutral-800 text-white', icon: '/type-icons/dark.svg' },
+  { name: 'Steel', jp: 'はがね', cn: '钢', color: 'bg-slate-400 text-black', icon: '/type-icons/steel.svg' },
+  { name: 'Fairy', jp: 'フェアリー', cn: '妖精', color: 'bg-pink-300 text-black', icon: '/type-icons/fairy.svg' }
 ];
 
 const typeMap = Object.fromEntries(types.map((type) => [type.name, type])) as Record<PokemonType, TypeMeta>;
@@ -247,7 +254,8 @@ function MatchupSection({
                   jp={currentType.jp}
                   cn={currentType.cn}
                   color={currentType.color}
-                  className={`h-full w-full aspect-square ${emphasisClassName}`.trim()}
+                  icon={currentType.icon}
+                  className={`h-full w-full ${emphasisClassName}`.trim()}
                 />
               </li>
             );
@@ -255,7 +263,7 @@ function MatchupSection({
         ) : (
           <li className="col-span-full flex h-full w-full flex-col justify-center rounded-xl p-4 opacity-40">
             <div className="flex flex-col">
-              <span>There's no matchup.</span>
+              <span>No matchups here.</span>
               <span className="text-xs opacity-50">没有匹配。</span>
               <span className="text-xs opacity-50">なし</span>
             </div>
@@ -319,28 +327,39 @@ function App() {
                 </p>
               </div>
 
-              <div className="flex w-full flex-col gap-4 rounded-2xl p-6 outline-2 md:flex-row md:items-start">
+              <div className="flex w-full flex-col gap-4 rounded-2xl p-6 outline-2">
                 <div className="flex flex-1 flex-col">
                   <h3 className="font-bold text-black dark:text-white">Selected Types</h3>
                   <span>选定的类型</span>
                   <span>選んでいるタイプ</span>
                 </div>
 
-                <ul className="grid w-full flex-1 grid-cols-1 gap-4">
-                  {opponentTypes.map((type) => {
-                    const currentType = typeMap[type];
-                    return (
-                      <li key={type} className="h-full">
-                        <TypeCard
-                          name={currentType.name}
-                          jp={currentType.jp}
-                          cn={currentType.cn}
-                          color={currentType.color}
-                          className="h-full w-full"
-                        />
-                      </li>
-                    );
-                  })}
+                <ul className="grid w-full flex-1 grid-cols-2 gap-4">
+                  {opponentTypes.length > 0 ? (
+                    opponentTypes.map((type) => {
+                      const currentType = typeMap[type];
+                      return (
+                        <li key={type} className="h-full">
+                          <TypeCard
+                            name={currentType.name}
+                            jp={currentType.jp}
+                            cn={currentType.cn}
+                            color={currentType.color}
+                            icon={currentType.icon}
+                            className="h-full w-full"
+                          />
+                        </li>
+                      );
+                    })
+                  ) : (
+                    <p className="flex flex-col gap-1 opacity-50">
+                      <span className="text-xs dark:text-white text-black">Select up to 2 types</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs">最多选择2种类型</span>
+                        <span className="text-xs">最大2個までタイプを選択してください</span>
+                      </div>
+                    </p>
+                  )}
                 </ul>
               </div>
             </div>
@@ -350,7 +369,7 @@ function App() {
                 <li key={type.name} className="h-full">
                   <button
                     onClick={() => handleSelectOpponentType(type.name)}
-                    className={`flex h-full w-full flex-col justify-center rounded-xl p-4 aspect-square outline-2 outline-black transition-opacity dark:outline-white ${type.color} ${
+                    className={`hover:scale-105 transition-transform flex h-full w-full flex-col justify-center rounded-xl p-4 gap-2 outline-2 outline-black transition-opacity dark:outline-white ${type.color} ${
                       opponentTypes.includes(type.name)
                         ? 'ring-4 ring-black dark:ring-white opacity-100'
                         : opponentTypes.length > 0
@@ -358,6 +377,9 @@ function App() {
                           : 'opacity-100'
                     }`}
                   >
+                    <div className="w-full h-full">
+                      <img src={type.icon} />
+                    </div>
                     <div className="flex flex-col">
                       <span className="font-bold">{type.name}</span>
                       <span className="text-xs opacity-50">{type.cn}</span>
@@ -380,7 +402,6 @@ function App() {
               types={matchup?.quadrupleEffective ?? []}
               typeMap={typeMap}
               emphasisClassName="ring-4 ring-black dark:ring-white"
-              columnsClassName="grid-cols-2"
             />
 
             <MatchupSection
@@ -390,7 +411,6 @@ function App() {
               types={matchup?.superEffective ?? []}
               typeMap={typeMap}
               emphasisClassName="ring-4 ring-black dark:ring-white"
-              columnsClassName="grid-cols-2"
             />
 
             <MatchupSection
