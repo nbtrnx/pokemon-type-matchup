@@ -322,14 +322,14 @@ function App() {
       return [...prev, typeName];
     });
 
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        outcomeSectionRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }, 50);
-    }
+    // if (window.innerWidth < 768) {
+    //   setTimeout(() => {
+    //     outcomeSectionRef.current?.scrollIntoView({
+    //       behavior: 'smooth',
+    //       block: 'start'
+    //     });
+    //   }, 50);
+    // }
   };
 
   const matchup = opponentTypes.length > 0 ? getMatchup(opponentTypes) : null;
